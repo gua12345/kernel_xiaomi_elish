@@ -4471,8 +4471,33 @@ static const struct seq_operations gpiolib_seq_ops = {
 	.show = gpiolib_seq_show,
 };
 
+void gpio_debug_print(void)
+{
+	struct gpio_chip *gpiochip;
+	int m = 0;
+	static const char * const gpio_chip_name[] = {
+		"soc:qcom,msm-audio-apr:qcom,q6core-audio:lpi_pinctrl@33c0000",
+		"c440000.qcom,spmi:qcom,pm8009@a:pinctrl@c000",
+		"c440000.qcom,spmi:qcom,pm8150l@4:pinctrl@c000",
+		"c440000.qcom,spmi:qcom,pm8150b@2:pinctrl@c000",
+		"c440000.qcom,spmi:qcom,pm8150@0:pinctrl@c000",
+		"f000000.pinctrl",
+	};
+
+	if (likely(!gpio_debug_suspend))
+		return;
+
+	pr_info("GPIOs dump:\n");
+	for (m=0;m<sizeof(gpio_chip_name)/sizeof(gpio_chip_name[0]);m++) {
+		gpiochip = find_chip_by_name(gpio_chip_name[m]);
+		if (gpiochip)
+			gpiolib_seq_show(NULL, gpiochip->gpiodev);
+	}
+}
+
 static int gpiolib_open(struct inode *inode, struct file *file)
 {
+	gpio_debug_print();
 	return seq_open(file, &gpiolib_seq_ops);
 }
 
@@ -4484,13 +4509,22 @@ static const struct file_operations gpiolib_operations = {
 	.release	= seq_release,
 };
 
+EXPORT_SYMBOL_GPL(gpio_debug_print);
+
 static int __init gpiolib_debugfs_init(void)
 {
 	/* /sys/kernel/debug/gpio */
 	(void) debugfs_create_file("gpio", S_IFREG | S_IRUGO,
 				NULL, NULL, &gpiolib_operations);
+
+	debugfs_create_u32("gpio_debug_suspend", 0644, NULL, &gpio_debug_suspend);
 	return 0;
 }
 subsys_initcall(gpiolib_debugfs_init);
+#else
+void gpio_debug_print(void)
+{
+}
+EXPORT_SYMBOL_GPL(gpio_debug_print);
 
 #endif	/* DEBUG_FS */
