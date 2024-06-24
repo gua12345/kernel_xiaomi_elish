@@ -157,7 +157,7 @@ static ssize_t  airoha_gps_write(struct file *file_p, const char __user *user,
 		result = pinctrl_select_state(pctrl, pctrl_mode_idle);
 		if (result < 0)
 			AIROHA_INFO("%s : change gps chip idle failed!\n", __func__);
-	} else if (strstr(buffer, "DF") != NULL) != NULL) {
+	} else if (strstr(buffer, "DF") != NULL) {
 		result = pinctrl_select_state(pctrl, pctrl_mode_active);
 		if (result < 0)
 			AIROHA_INFO("%s : change gps chip active failed!\n", __func__);
