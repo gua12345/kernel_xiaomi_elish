@@ -48,6 +48,8 @@ struct cpu_sync {
 
 static DEFINE_PER_CPU(struct cpu_sync, sync_info);
 
+static struct workqueue_struct *cpu_boost_wq;
+
 static struct kthread_work input_boost_work;
 
 static bool input_boost_enabled;
