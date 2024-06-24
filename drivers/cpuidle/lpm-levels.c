@@ -136,6 +136,31 @@ s32 msm_cpuidle_get_deep_idle_latency(void)
 }
 EXPORT_SYMBOL(msm_cpuidle_get_deep_idle_latency);
 
+#define EVENT_INPUT 0x1
+#define EVENT_FCAM  0x2
+#define EVENT_SUM   0x2
+static unsigned long lpm_dev_bitmp = 0;
+
+void lpm_disable_for_dev(bool on, char event_dev)
+{
+	unsigned long mask = BIT_MASK(event_dev);
+
+	if (event_dev > EVENT_SUM) {
+		pr_err("No support device %d disable lpm\n", event_dev);
+		return;
+	}
+
+	if (on) {
+		lpm_dev_bitmp |= mask;
+		sleep_disabled_dev = !!on;
+	} else {
+		lpm_dev_bitmp &= ~mask;
+		if(lpm_dev_bitmp == 0)
+			sleep_disabled_dev = !!on;
+	}
+}
+EXPORT_SYMBOL(lpm_disable_for_dev);
+
 uint32_t register_system_pm_ops(struct system_pm_ops *pm_ops)
 {
 	if (sys_pm_ops)
